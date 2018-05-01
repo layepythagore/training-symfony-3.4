@@ -1,9 +1,31 @@
 {% extends "@OCPlatform/layout.html.twig" %}
 
 {% block title %}
-  {{ parent() }} - Index
+  Accueil - {{ parent() }}
 {% endblock %}
 
-{% block body %}
-    Notre plateforme est un peu vide pour le moment, mais cela viendra !
+{% block ocplatform_body %}
+    
+	<h2>Liste des annonces</h2>
+
+	{% for message in app.flashes('notice') %}
+	    <div class="flash-notice">
+	        {{ message }}
+	    </div>
+	{% endfor %}
+
+	<ul>
+		{% for advert in listAdverts  %}
+			<li>
+				<a href="{{ path('oc_platform_view', {'id': advert.id}) }}">
+				{{ advert.title }}
+				</a>
+				par {{ advert.author }},
+				le {{ advert.date|date('d/m/Y') }}
+			</li>
+		{% else %}
+			<li>Pas (encore !) d'annonces</li>
+		{% endfor %}
+	</ul>
+
 {% endblock %}
