@@ -2,6 +2,7 @@
 
 namespace OC\PlatformBundle\Repository;
 
+use Doctrine\ORM\Tools\Pagination\Paginator;
 /**
  * AdvertRepository
  *
@@ -28,33 +29,33 @@ class AdvertRepository extends \Doctrine\ORM\EntityRepository
     return $results;
   }
   
-  function myFindOne($id) {
+    function myFindOne($id) {
       $qb = $this->createQueryBuilder('a');
       $qb->where('a.id = :id')
          ->setParameter('id', $id);
       
       return $qb->getQuery()->getResult();
-  }
+    }
   
-  public function findByAuthorAndDate($author, $year)
-  {
-    $qb = $this->createQueryBuilder('a');
-    $qb->where('a.author = :author')
-       ->setParameter('author', $author)
-       ->andWhere('a.date < :year')
-       ->setParameter('year', $year)
-       ->orderBy('a.date', 'DESC');
+    public function findByAuthorAndDate($author, $year)
+   {
+        $qb = $this->createQueryBuilder('a');
+        $qb->where('a.author = :author')
+           ->setParameter('author', $author)
+           ->andWhere('a.date < :year')
+           ->setParameter('year', $year)
+           ->orderBy('a.date', 'DESC');
 
-    return $qb->getQuery()->getResult();
-  }
+        return $qb->getQuery()->getResult();
+   }
   
-  public function whereCurrentYear(QueryBuilder $qb)
-  {
-    $qb
-      ->andWhere('a.date BETWEEN :start AND :end')
-      ->setParameter('start', new \Datetime(date('Y').'-01-01'))  // Date entre le 1er janvier de cette année
-      ->setParameter('end',   new \Datetime(date('Y').'-12-31'));  // Et le 31 décembre de cette année
-  }
+   public function whereCurrentYear(QueryBuilder $qb)
+   {
+        $qb
+          ->andWhere('a.date BETWEEN :start AND :end')
+          ->setParameter('start', new \Datetime(date('Y').'-01-01'))  // Date entre le 1er janvier de cette année
+          ->setParameter('end',   new \Datetime(date('Y').'-12-31'));  // Et le 31 décembre de cette année
+   }
   
   public function myFind()
   {
@@ -70,10 +71,9 @@ class AdvertRepository extends \Doctrine\ORM\EntityRepository
     return $qb->getQuery()->getResult();
   }
   
-  // Depuis le repository d'Advert
-
-public function getAdvertWithApplications()
-{
+  
+  public function getAdvertWithApplications()
+  {
   $qb = $this->createQueryBuilder('a')
           ->leftJoin('a.applications', 'app')
           ->addSelect('app');
@@ -85,7 +85,7 @@ public function getAdvertWithApplications()
   return $qb->getQuery()->getResult();
 }
 
-public function getAdvertWithCategories(array $categoryNames) {
+  public function getAdvertWithCategories(array $categoryNames) {
     
     $qb = $this->createQueryBuilder('a');
     $qb->innerJoin('a.categories', 'c')->addSelect(c);
@@ -108,5 +108,25 @@ public function getAdvertWithCategories(array $categoryNames) {
       $query->setParameter('id', $id);
       // Utilisation de getSingleResult car la requête ne doit retourner qu'un seul résultat
       return $query->getSingleResult();
+  }
+
+  public function getAdverts($page, $nbPerPage) {      
+      $query = $this->createQueryBuilder('a')
+                    ->leftJoin('a.image', 'i')
+                    ->addSelect('i')
+                    ->leftJoin('a.categories', 'c')
+                    ->addSelect('c')
+                    ->orderBy('a.date', 'DESC')
+                    ->getQuery();
+      
+      $query
+      // On définit l'annonce à partir de laquelle commencer la liste
+      ->setFirstResult(($page-1) * $nbPerPage)
+      // Ainsi que le nombre d'annonce à afficher sur une page
+      ->setMaxResults($nbPerPage);
+      
+      // Enfin, on retourne l'objet Paginator correspondant à la requête construite
+      // (n'oubliez pas le use correspondant en début de fichier)
+      return new Paginator($query, true);
   }
 }
