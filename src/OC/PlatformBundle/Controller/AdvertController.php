@@ -86,7 +86,7 @@ class AdvertController extends Controller
         ]);
     }
 
-    public  function addAction(Request $request)
+    public function addAction(Request $request)
     {
             // On crée un objet Advert
             $advert = new Advert();
@@ -94,7 +94,7 @@ class AdvertController extends Controller
 
         // Reste de la méthode qu'on avait déjà écrit
         if($request->isMethod('POST') && $form->handleRequest($request)->isValid()){
-
+                $advert->setIp($request->getClientIp());
                 $em = $this->getDoctrine()->getManager();
                 $em->persist($advert);
                 $em->flush();
@@ -159,9 +159,21 @@ class AdvertController extends Controller
     public function testAction() {
 
             $advert = new Advert();
-            $advert->setAuthor("laye");
-            $advert->setContent("test slug");
-            $advert->setTitle("Recherche développeur !");
+            $advert->setAuthor("L");
+            $advert->setContent("test");
+            $advert->setTitle("R!");
+        // On récupère le service validator
+
+        $validator = $this->get('validator');
+        // On déclenche la validation sur notre object
+        $listErrors = $validator->validate($advert);
+        // Si $listErrors n'est pas vide, on affiche les erreurs
+        if(count($listErrors) > 0) {
+            // $listErrors est un objet, sa méthode __toString permet de lister joliement les erreurs
+            return new Response((string) $listErrors);
+        } else {
+            return new Response("L'annonce est valide !");
+        }
             $em = $this->getDoctrine()->getManager();
             $em->persist($advert);
             $em->flush(); // C'est à ce moment qu'est généré le slug

@@ -11,17 +11,33 @@ namespace OC\PlatformBundle\Repository;
 class ApplicationRepository extends \Doctrine\ORM\EntityRepository
 {
     public function getApplicationsWithAdvert($limit)
-  {
-    $qb = $this->createQueryBuilder('a');
-    // On fait une jointure avec l'entité Advert avec pour alias « adv »
+    {
+        $qb = $this->createQueryBuilder('a');
+        // On fait une jointure avec l'entité Advert avec pour alias « adv »
 
-    $qb->innerJoin('a.advert', 'adv')
-       ->addSelect('adv');
+        $qb->innerJoin('a.advert', 'adv')
+           ->addSelect('adv');
 
-    // Puis on ne retourne que $limit résultats
-    $qb->setMaxResults($limit);
-    // Enfin, on retourne le résultat
+        // Puis on ne retourne que $limit résultats
+        $qb->setMaxResults($limit);
+        // Enfin, on retourne le résultat
 
-    return $qb->getQuery()->getResult();
-  }
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param $ip // addresse ip du client
+     * @param $nbs // nbre de second
+     * @return bool
+     */
+    public function isFlood($ip, $seconds){
+        return (bool) $this->createQueryBuilder('a')
+            ->select('COUNT(a)')
+            ->where('a.date >= :date')
+            ->setParameter('date', new \DateTime($seconds. ' seconds ago'))
+            // Nous n'avons pas cet attribut, je laisse en commentaire, mais voici comment pourrait être la condition :
+            ->andWhere('a.ip = :ip')->setParameter('ip', $ip)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

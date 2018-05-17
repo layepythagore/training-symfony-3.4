@@ -13,28 +13,28 @@ class AdvertRepository extends \Doctrine\ORM\EntityRepository
 {
     public function myFindAll()
     {
-    // Méthode 1 : en passant par l'EntityManager
-    $queryBuilder = $this->_em->createQueryBuilder()
-      ->select('a')
-      ->from($this->_entityName, 'a');
-    // Dans un repository, $this->_entityName est le namespace de l'entité gérée
-    // Ici, il vaut donc OC\PlatformBundle\Entity\Advert
-    
-    // Méthode 2 : en passant par le raccourci (je recommande)
-    $queryBuilder = $this->createQueryBuilder('a');
-    $query = $queryBuilder->getQuery();
+        // Méthode 1 : en passant par l'EntityManager
+        $queryBuilder = $this->_em->createQueryBuilder()
+          ->select('a')
+          ->from($this->_entityName, 'a');
+        // Dans un repository, $this->_entityName est le namespace de l'entité gérée
+        // Ici, il vaut donc OC\PlatformBundle\Entity\Advert
 
-    // On récupère les résultats à partir de la Query
-    $results = $query->getResult();
-    return $results;
+        // Méthode 2 : en passant par le raccourci (je recommande)
+        $queryBuilder = $this->createQueryBuilder('a');
+        $query = $queryBuilder->getQuery();
+
+        // On récupère les résultats à partir de la Query
+        $results = $query->getResult();
+        return $results;
   }
   
     function myFindOne($id) {
-      $qb = $this->createQueryBuilder('a');
-      $qb->where('a.id = :id')
-         ->setParameter('id', $id);
-      
-      return $qb->getQuery()->getResult();
+        $qb = $this->createQueryBuilder('a');
+        $qb->where('a.id = :id')
+            ->setParameter('id', $id);
+
+        return $qb->getQuery()->getResult();
     }
   
     public function findByAuthorAndDate($author, $year)
@@ -49,7 +49,7 @@ class AdvertRepository extends \Doctrine\ORM\EntityRepository
         return $qb->getQuery()->getResult();
    }
   
-   public function whereCurrentYear(QueryBuilder $qb)
+    public function whereCurrentYear(QueryBuilder $qb)
    {
         $qb
           ->andWhere('a.date BETWEEN :start AND :end')
@@ -57,7 +57,7 @@ class AdvertRepository extends \Doctrine\ORM\EntityRepository
           ->setParameter('end',   new \Datetime(date('Y').'-12-31'));  // Et le 31 décembre de cette année
    }
   
-  public function myFind()
+    public function myFind()
   {
     $qb = $this->createQueryBuilder('a');
     // On peut ajouter ce qu'on veut avant
@@ -72,7 +72,7 @@ class AdvertRepository extends \Doctrine\ORM\EntityRepository
   }
   
   
-  public function getAdvertWithApplications()
+    public function getAdvertWithApplications()
   {
   $qb = $this->createQueryBuilder('a')
           ->leftJoin('a.applications', 'app')
@@ -85,7 +85,7 @@ class AdvertRepository extends \Doctrine\ORM\EntityRepository
   return $qb->getQuery()->getResult();
 }
 
-  public function getAdvertWithCategories(array $categoryNames) {
+    public function getAdvertWithCategories(array $categoryNames) {
     
     $qb = $this->createQueryBuilder('a');
     $qb->innerJoin('a.categories', 'c')->addSelect(c);
@@ -95,14 +95,14 @@ class AdvertRepository extends \Doctrine\ORM\EntityRepository
 }
   
   // DQL  
-  public function myFindAllDQL()
+    public function myFindAllDQL()
   {
       $query = $this->_em->createQuery('SELECT a FROM OCPlatformBundle:Advert a');
       $results = $query->getResult();
       return $results;
   }
   
-  public function myFindDQL($id)
+    public function myFindDQL($id)
   {
       $query = $this->_em->createQuery('SELECT a FROM OCPlatformBundle:Advert a WHERE a.id = :id');
       $query->setParameter('id', $id);
@@ -110,7 +110,7 @@ class AdvertRepository extends \Doctrine\ORM\EntityRepository
       return $query->getSingleResult();
   }
 
-  public function getAdverts($page, $nbPerPage) {      
+    public function getAdverts($page, $nbPerPage) {
       $query = $this->createQueryBuilder('a')
                     ->leftJoin('a.image', 'i')
                     ->addSelect('i')

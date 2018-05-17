@@ -4,9 +4,17 @@ namespace OC\PlatformBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+
+use OC\PlatformBundle\Validator\Antiflood;
+
 use Gedmo\Mapping\Annotation as Gedmo;
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * Advert
@@ -14,6 +22,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  * @ORM\Table(name="advert")
  * @ORM\Entity(repositoryClass="OC\PlatformBundle\Repository\AdvertRepository")
  * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity(fields="title", message="Une annonce existe déjà avec ce titre.")
  */
 class Advert
 {
@@ -43,8 +52,8 @@ class Advert
 
     /**
      * @var string
-     * @ORM\Column(name="title", type="string", length=255)
-     * @Assert\Length(min=10)
+     * @ORM\Column(name="title", type="string", length=255, unique=true)
+     * @Assert\Length(min=10, minMessage="Le titre doit faire au moins {{limit}} caractères")
      */
     private $title;
 
@@ -59,6 +68,7 @@ class Advert
      * @var string
      * @ORM\Column(name="content", type="text")
      * @Assert\NotBlank()
+     * @Antiflood()
      */
     private $content;
 
@@ -66,6 +76,12 @@ class Advert
      * @ORM\Column(name="published", type="boolean")
     */
     private $published = true;
+
+    /**
+     * @var string
+     * @ORM\Column(name="ip", type="string", length=255)
+     */
+    private $ip;
 
     /**
      * @ORM\OneToOne(targetEntity="OC\PlatformBundle\Entity\Image", cascade={"persist", "remove"}) 
@@ -99,6 +115,22 @@ class Advert
      * @ORM\Column(name="slug", type="string", length=255, unique=true)
      */
     private $slug;
+
+    /**
+     * @Assert\Callback
+     */
+    public function isContentValid(ExecutionContextInterface $context){
+        $forbiddenWords = ['démotivation', 'abandon'];
+
+        // On vérifie que le contenu ne contient pas l'un des mots
+        if(preg_match('#'.implode('|', $forbiddenWords).'#', $this->getContent())){
+            // La règle est violée, on définit l'erreur
+            $context->buildViolation('Contenu invalide il contient un mot interdit.') //messagé
+                    ->atPath('content') // attribut de l'objet violé
+                    ->addViolation(); //declenche l'erreur
+        }
+    }
+
 
     /**
      * Get id
@@ -408,5 +440,29 @@ class Advert
     public function getSlug()
     {
         return $this->slug;
+    }
+
+    /**
+     * Set ip
+     *
+     * @param string $ip
+     *
+     * @return Advert
+     */
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
+
+        return $this;
+    }
+
+    /**
+     * Get ip
+     *
+     * @return string
+     */
+    public function getIp()
+    {
+        return $this->ip;
     }
 }

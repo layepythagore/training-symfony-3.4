@@ -3,8 +3,6 @@
 namespace OC\PlatformBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -49,6 +47,7 @@ class Application
     /**
      * @var string
      * @ORM\Column(name="ip", type="string", length=255)
+     * @Assert\NotBlank()
      */
     private $ip;
 
@@ -181,29 +180,5 @@ class Application
      */
     public function decrease() {
         $this->getAdvert()->decreaseApplication();
-    }
-
-    /**
-     * Set ip
-     *
-     * @param string $ip
-     *
-     * @return Application
-     */
-    public function setIp($ip)
-    {
-        $this->ip = $ip;
-
-        return $this;
-    }
-
-    /**
-     * Get ip
-     *
-     * @return string
-     */
-    public function getIp()
-    {
-        return $this->ip;
     }
 }
